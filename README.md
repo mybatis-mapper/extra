@@ -7,6 +7,7 @@
 ## dynamic-tablename 动态表名
 
 添加依赖：
+
 ```xml
 <dependency>
   <groupId>io.mybatis.extra</groupId>
@@ -25,22 +26,28 @@
 使用示例：
 
 ```java
-Optional<User> user = DynamicTableName.hint("user_2", () -> entityMapper.selectByPrimaryKey(1L));
+Optional<User> user=DynamicTableName.hint("user_2",()->entityMapper.selectByPrimaryKey(1L));
 ```
 
 `selectByPrimaryKey` 对应的 xml 方法：
+
 ```xml
+
 <script>
-SELECT id,name AS userName,sex FROM ${@io.mybatis.extra.dynamic.tablename.DynamicTableName@table('user')}
-<where>
-id = #{id}
-</where> 
+  SELECT id,name AS userName,sex FROM
+  ${@io.mybatis.extra.dynamic.tablename.DynamicTableName@table(_parameter, xxx@class)}
+  <where>
+    id = #{id}
+  </where>
 </script>
 ```
 
 实际执行的 SQL：
+
 ```sql
-SELECT id,name AS userName,sex FROM user_2 WHERE id = ?
+SELECT id, name AS userName, sex
+FROM user_2
+WHERE id = ?
 ```
 
 ## mapper-common 通用方法

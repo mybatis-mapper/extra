@@ -18,14 +18,26 @@ public class DynamicEntityTableFactory implements EntityTableFactory {
   @Override
   public EntityTable createEntityTable(Class<?> entityClass, Chain chain) {
     EntityTable entityTable = chain.createEntityTable(entityClass);
-    if(entityTable != null) {
+    if (entityTable != null) {
       Boolean enabled = entityTable.getPropBoolean("dynamic.table.enabled", true);
-      if(enabled) {
+      if (enabled) {
         // cglib 动态代理，支持 tableName 重写
         entityTable = proxy(entityTable);
       }
     }
     return entityTable;
+  }
+
+  /**
+   * 动态代理 entityTable 方法
+   *
+   * @param entityTable 被代理对象
+   */
+  public EntityTable proxy(EntityTable entityTable) {
+    Enhancer enhancer = new Enhancer();
+    enhancer.setSuperclass(EntityTable.class);
+    enhancer.setCallback(new EntityTableMethodInterceptor(entityTable));
+    return (EntityTable) enhancer.create(new Class[]{Class.class}, new Object[]{entityTable.entityClass()});
   }
 
   public static class EntityTableMethodInterceptor implements MethodInterceptor {
@@ -42,18 +54,6 @@ public class DynamicEntityTableFactory implements EntityTableFactory {
       }
       return method.invoke(target, objects);
     }
-  }
-
-  /**
-   * 动态代理 entityTable 方法
-   *
-   * @param entityTable 被代理对象
-   */
-  public EntityTable proxy(EntityTable entityTable) {
-    Enhancer enhancer = new Enhancer();
-    enhancer.setSuperclass(EntityTable.class);
-    enhancer.setCallback(new EntityTableMethodInterceptor(entityTable));
-    return (EntityTable) enhancer.create(new Class[]{Class.class}, new Object[]{entityTable.entityClass()});
   }
 
 }
